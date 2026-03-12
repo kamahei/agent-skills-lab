@@ -41,11 +41,11 @@ Use these checklists before finalizing new files in this repository.
 - Placeholders are obvious and easy to replace.
 - The template does not hardcode project-specific secrets or identifiers.
 - The template is general enough to reuse more than once.
-- The template is documented in the relevant README when needed.
+- The template is documented in the relevant `GUIDE.md` when needed.
 
 ## Final Consistency Check
 
 - Paths and examples match the current repository structure.
-- Naming is consistent across README files, templates, and samples.
+- Naming is consistent across `GUIDE.md` files, templates, and samples.
 - Shared content was not copied into multiple places without reason.
 - Related documentation was updated if the change introduced a new pattern.

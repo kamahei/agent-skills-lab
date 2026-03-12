@@ -41,7 +41,7 @@ Use this order when deciding where a new file belongs:
 
 1. Put the template in `.agents/templates/`.
 2. Keep placeholders obvious and easy to replace.
-3. Document the template in `.agents/templates/README.md`.
+3. Document the template in `.agents/templates/GUIDE.md`.
 4. Prefer one strong template over several weakly differentiated ones.
 
 ## Adding An AI-Specific File
@@ -60,7 +60,7 @@ Before merging or keeping a change, confirm:
 - The content is practical, not only abstract.
 - Shared content was not duplicated unnecessarily into multiple tool folders.
 - Paths, examples, and file references are internally consistent.
-- New templates or samples are reflected in the relevant README when needed.
+- New templates or samples are reflected in the relevant `GUIDE.md` when needed.
 
 ## Useful Companion Docs
 
@@ -68,4 +68,4 @@ Before merging or keeping a change, confirm:
 - `docs/tool-mapping.md`
 - `docs/checklists.md`
 - `docs/env-example-policy.md`
-- `.agents/templates/README.md`
+- `.agents/templates/GUIDE.md`

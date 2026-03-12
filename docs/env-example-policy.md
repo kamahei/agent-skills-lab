@@ -64,4 +64,4 @@ FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nreplace-me\n-----END PRIVATE 
 
 - Update `.env.example` when adding or removing required environment variables in a sample.
 - Keep placeholder values consistent with the rest of the documentation.
-- If a sample has a README, mention how the `.env.example` file is meant to be used.
+- If a sample has a `GUIDE.md`, mention how the `.env.example` file is meant to be used.

@@ -37,7 +37,7 @@ This repository is a workspace for building reusable `AGENTS.md`, skills, prompt
 ### Create an AI-specific asset
 
 1. Choose the tool-specific folder such as `.github/`, `.claude/`, or `.gemini/`.
-2. Follow the conventions documented in that folder's README.
+2. Follow the conventions documented in that folder's `GUIDE.md`.
 3. Reuse shared templates from `.agents/templates/` instead of rewriting from scratch.
 
 ### Create a sample AGENTS.md
