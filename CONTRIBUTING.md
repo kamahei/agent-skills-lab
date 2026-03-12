@@ -9,6 +9,7 @@ This repository is a library of reusable AI agent instructions, skills, prompts,
 - Put shared content in `.agents/` whenever possible.
 - Create AI-specific variants only when a tool requires a different file format, location, or behavior.
 - Prefer small, clearly scoped additions over broad speculative restructuring.
+- When revising an existing `AGENTS.md`, Skill, or Agent file, update the existing file in place unless a new variant is explicitly requested.
 
 ## Placement Rules
 
@@ -37,6 +38,15 @@ Use this order when deciding where a new file belongs:
 4. Add supporting files only if they materially improve reuse.
 5. If the sample needs environment variables, include `.env.example` and follow `docs/env-example-policy.md`.
 
+## Updating An Existing AGENTS, Skill, Or Agent File
+
+1. Update the existing file in place when the target is clear.
+2. Do not create a duplicate file for small revisions.
+3. Preserve the file's scope, location, and format unless the task explicitly requires restructuring.
+4. If both a shared source and a tool-specific wrapper exist, update the shared source first when the change is logically shared.
+5. If multiple plausible target files exist, identify the correct one before making the change.
+6. If the revision changes a reusable pattern, update the related template or `GUIDE.md` too.
+
 ## Adding A Shared Template
 
 1. Put the template in `.agents/templates/`.
@@ -61,6 +71,7 @@ Before merging or keeping a change, confirm:
 - Shared content was not duplicated unnecessarily into multiple tool folders.
 - Paths, examples, and file references are internally consistent.
 - New templates or samples are reflected in the relevant `GUIDE.md` when needed.
+- Existing files were updated in place when a new copy was not necessary.
 
 ## Useful Companion Docs
 

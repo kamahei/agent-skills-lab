@@ -8,6 +8,7 @@ This repository is a workspace for creating, organizing, and reusing `AGENTS.md`
 
 - The root `AGENTS.md` is the operating guide for this repository itself. Do not keep sample `AGENTS.md` files at the root.
 - When a user asks to create an `AGENTS.md`, create it under `agent-samples/<Topic>/AGENTS.md` unless the request is clearly about this repository's own root rules.
+- When a user asks to revise, improve, or fix an existing `AGENTS.md`, Skill, or Agent file, update the existing file in place unless the user explicitly asks for a new copy or variant.
 - Place reusable, cross-AI assets under `.agents/`.
 - Place AI-specific assets in the directory expected by that AI tool.
 - Directory conventions and supported features can change. Verify the latest official documentation before introducing or expanding AI-specific folders.
@@ -59,7 +60,21 @@ This repository is a workspace for creating, organizing, and reusing `AGENTS.md`
 - If it is specific to one AI tool, place it in that tool's dedicated directory.
 - Prefer reuse and centralization over duplicate implementations when an existing shared skill can cover the need.
 
-### 3. Requests To Create Agent Files
+### 3. Requests To Update An Existing AGENTS.md
+
+- If the target file is specified, update that file in place.
+- Do not create a new sample or duplicate file unless the user explicitly asks for a new version, variant, or comparison copy.
+- Preserve the file's current scope, location, and overall purpose unless the task explicitly requires restructuring.
+- If the update changes a repeated pattern that should affect templates or guides, update the related shared documentation too when appropriate.
+
+### 4. Requests To Update An Existing Skill Or Agent File
+
+- Update the current file in place and preserve its tool-specific format.
+- Keep required metadata, frontmatter, and naming conventions unless the task explicitly requires a format change.
+- If both a shared source and a tool-specific wrapper exist, update the shared source first when the change is logically shared, then adjust the wrapper only where needed.
+- Do not create parallel versions just to apply a small revision.
+
+### 5. Requests To Create Agent Files
 
 - For general, vendor-neutral agent instructions, prefer `AGENTS.md`.
 - For Claude-specific instructions, use `CLAUDE.md` or `.claude/agents/`.
@@ -80,6 +95,8 @@ This repository is a workspace for creating, organizing, and reusing `AGENTS.md`
   - Intended AI tool or tools
   - Runtime or operating environment
   - Desired strictness, scope, or output depth
+- If the user asks to revise an existing file and multiple plausible targets exist, ask which file should be updated.
+- If there is only one obvious target file, update it without asking.
 - Do not ask unnecessary questions when common best practices are enough to produce a solid first version.
 - When in doubt, create a practical first draft and include concise improvement suggestions if useful.
 
@@ -89,6 +106,7 @@ This repository is a workspace for creating, organizing, and reusing `AGENTS.md`
 - AGENTS, Skill, and Agent files should normally include at least purpose, intended tasks, workflow, constraints, and validation guidance.
 - Avoid scattering long duplicated instructions across AI-specific folders. Put shared rules in `.agents/` whenever possible.
 - Only add thin AI-specific adaptation layers when the tool truly needs its own format or conventions.
+- When revising an existing file, prefer targeted edits over broad rewrites unless the file is clearly unsalvageable or the user asks for a rewrite.
 
 ## Handling Current Information
 

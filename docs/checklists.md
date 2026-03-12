@@ -8,6 +8,7 @@ Use these checklists before finalizing new files in this repository.
 - The file defines how to handle ambiguous requests.
 - The file defines language rules for created files and chat replies.
 - The file defines placement rules or repository boundaries when relevant.
+- The file explains how to handle revisions to existing AGENTS, Skill, or Agent files when relevant.
 - The file includes validation expectations.
 - The guidance is practical and actionable, not only high-level.
 
@@ -49,3 +50,4 @@ Use these checklists before finalizing new files in this repository.
 - Naming is consistent across `GUIDE.md` files, templates, and samples.
 - Shared content was not copied into multiple places without reason.
 - Related documentation was updated if the change introduced a new pattern.
+- Existing files were revised in place unless a new variant was intentionally created.
