@@ -59,6 +59,17 @@ This repository is a workspace for creating, organizing, and reusing `AGENTS.md`
 - If the skill is reusable across multiple AI tools, create it under `/.agents/skills/<skill-name>/`.
 - If it is specific to one AI tool, place it in that tool's dedicated directory.
 - Prefer reuse and centralization over duplicate implementations when an existing shared skill can cover the need.
+- For task-execution skills, include clear `Activation`, `Inputs`, `Workflow`, `Guardrails`, and `Output Rules` sections unless the target format strongly requires a different structure.
+- For bugfix, review, audit, migration, or other high-judgment skills, define how to handle scope limits, uncertainty, validation, and risky changes instead of only describing the ideal outcome.
+- For bugfix or audit skills specifically, require all of the following when relevant:
+  - Start from existing diagnostics, failing tests, logs, and concrete symptoms before broad code scanning.
+  - State what to do when the repository is too large to inspect exhaustively in one pass.
+  - Prioritize confirmed correctness, security, reliability, and regression issues ahead of cosmetic cleanup.
+  - Distinguish confirmed bugs, suspected risks, and intentionally unmodified findings.
+  - Prefer the smallest safe fix and require asking before architecture, schema, dependency, API, or other wide-impact changes.
+  - Require post-change validation and a self-review of the actual diff.
+- Do not create skills that imply exhaustive review, formal security auditing, or guaranteed correctness unless the workflow can realistically support that claim.
+- Prefer skills that explain how to proceed when evidence is insufficient, reproduction is incomplete, or a safe fix cannot be verified locally.
 
 ### 3. Requests To Update An Existing AGENTS.md
 
@@ -107,6 +118,7 @@ This repository is a workspace for creating, organizing, and reusing `AGENTS.md`
 - Avoid scattering long duplicated instructions across AI-specific folders. Put shared rules in `.agents/` whenever possible.
 - Only add thin AI-specific adaptation layers when the tool truly needs its own format or conventions.
 - When revising an existing file, prefer targeted edits over broad rewrites unless the file is clearly unsalvageable or the user asks for a rewrite.
+- Good skills should define not only what to do, but also what not to claim, when to stop, when to ask, and how to report uncertainty or incomplete coverage.
 
 ## Handling Current Information
 
