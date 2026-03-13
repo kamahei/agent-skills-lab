@@ -1,13 +1,14 @@
 ---
 name: multi-agent-consensus
-description: Run an on-demand 2-agent or 3-agent reasoning and review workflow with bounded refinement and explicit stop conditions. Use only when the user explicitly asks for `use 2-agents-consensus`, `use 3-agents-consensus`, multi-agent mode, consensus, or a second-opinion review on a plan, implementation, architecture tradeoff, or code review.
+description: Run the `/multi-agent-consensus` workflow for on-demand 2-agent or 3-agent reasoning and review with bounded refinement and explicit stop conditions. Use only when the user explicitly invokes `/multi-agent-consensus`. Do not use for generic mentions of multi-agent work, consensus, or second-opinion review without that exact skill invocation.
 ---
 
 # Multi Agent Consensus
 
 ## Activation
 
-- Activate only on an explicit user request for `use 2-agents-consensus`, `use 3-agents-consensus`, multi-agent mode, consensus, or a second opinion.
+- Activate only when the user explicitly invokes `/multi-agent-consensus`.
+- Do not activate for generic requests about multi-agent work, consensus, or second opinions unless `/multi-agent-consensus` is explicitly specified.
 - Default to 2 agents when the user does not specify a count.
 - Keep the participant set fixed for the run: the current agent plus the selected non-current slots only.
 - Do not add helper, review, explore, or code-review agents outside that set.
@@ -123,6 +124,6 @@ Gemini-specific fallback:
 
 ## Suggested Prompts
 
-- `Use 2-agents-consensus for this task.`
-- `Use 3-agents-consensus for this task.`
-- `Use 3-agents-consensus with claude-opus-4.6, gemini-3-pro-preview, and current AI model.`
+- `/multi-agent-consensus run this task in 2-agent mode`
+- `/multi-agent-consensus run this task in 3-agent mode`
+- `/multi-agent-consensus run this task in 3-agent mode with claude-opus-4.6, gemini-3-pro-preview, and current AI model`
