@@ -2,7 +2,7 @@
 name: consensus-gemini-3-1-pro-preview
 description: Pinned Gemini 3.1 Pro Preview subagent for the multi-agent-consensus workflow. Use it for an independent second opinion or review proposal, not for file edits.
 model: gemini-3.1-pro-preview
-user-invokable: false
+user-invocable: false
 tools: [execute, read, search, web]
 ---
 

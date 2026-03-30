@@ -2,7 +2,7 @@
 name: consensus-claude-sonnet-4-6
 description: Claude Sonnet 4.6 fallback subagent for the multi-agent-consensus workflow. Use it for an independent second opinion or review proposal when the Opus slot is unavailable, not for file edits.
 model: claude-sonnet-4.6
-user-invokable: false
+user-invocable: false
 tools: [execute, read, search, web]
 ---
 

@@ -2,7 +2,7 @@
 name: consensus-gpt-5-4
 description: Pinned GPT-5.4 subagent for the multi-agent-consensus workflow. Use it for an independent second opinion or review proposal, not for file edits.
 model: gpt-5.4
-user-invokable: false
+user-invocable: false
 tools: [execute, read, search, web]
 ---
 

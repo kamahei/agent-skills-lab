@@ -2,7 +2,7 @@
 name: example-agent
 description: Short summary of what this Copilot agent does and when to use it.
 model: gpt-5.4
-user-invokable: true
+user-invocable: true
 tools: [execute, read, search, web]
 ---
 

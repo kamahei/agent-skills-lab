@@ -2,7 +2,7 @@
 name: consensus-claude-opus-4-6
 description: Pinned Claude Opus 4.6 subagent for the multi-agent-consensus workflow. Use it for an independent second opinion or review proposal, not for file edits.
 model: claude-opus-4.6
-user-invokable: false
+user-invocable: false
 tools: [execute, read, search, web]
 ---
 
