@@ -49,7 +49,7 @@ This repository is a workspace for building reusable `AGENTS.md`, skills, prompt
 ## Current Starting Point
 
 - Existing GitHub Copilot agent files live in `.github/agents/`.
-- An existing GitHub Copilot skill example lives in `.github/skills/multi-agent-consensus/`.
+- Existing GitHub Copilot skill examples live in `.github/skills/multi-agent-consensus/` and `.github/skills/multi-agent-review-fix/`.
 - Shared templates live in `.agents/templates/`.
 - Operational maintenance docs live in `docs/`.
 

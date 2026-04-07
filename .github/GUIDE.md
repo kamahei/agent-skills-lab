@@ -18,4 +18,5 @@ This directory stores GitHub Copilot-specific assets.
 ## Notes
 
 - Existing examples already live in `agents/` and `skills/`.
+- Keep reusable pinned subagents in `agents/` with workflow-neutral names when multiple Copilot skills should share them.
 - Reuse `.agents/templates/` before creating new file formats from scratch.

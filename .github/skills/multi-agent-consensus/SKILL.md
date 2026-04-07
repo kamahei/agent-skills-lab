@@ -38,8 +38,8 @@ Selection rules:
 - If the user explicitly names 2 or 3 allowed models, use that set after applying the same family rule.
 - If the explicit set still cannot satisfy the requested independent count, fall back to the default set.
 - Use `gemini-3-pro-preview` as the portable Gemini baseline.
-- In VS Code or when the client already exposes `gemini-3.1-pro-preview`, prefer `consensus-gemini-3-1-pro-preview` before `consensus-gemini-3-pro-preview`.
-- In Copilot CLI or when client support is unclear, prefer `consensus-gemini-3-pro-preview` before `consensus-gemini-3-1-pro-preview`.
+- In VS Code or when the client already exposes `gemini-3.1-pro-preview`, prefer `pinned-gemini-3-1-pro-preview` before `pinned-gemini-3-pro-preview`.
+- In Copilot CLI or when client support is unclear, prefer `pinned-gemini-3-pro-preview` before `pinned-gemini-3-1-pro-preview`.
 
 ## Depth Controls And Reporting
 
@@ -63,11 +63,11 @@ Supported custom-agent locations:
 
 Mappings:
 
-- `consensus-claude-opus-4-6` -> `claude-opus-4.6`
-- `consensus-claude-sonnet-4-6` -> `claude-sonnet-4.6`
-- `consensus-gpt-5-4` -> `gpt-5.4`
-- `consensus-gemini-3-1-pro-preview` -> `gemini-3.1-pro-preview`
-- `consensus-gemini-3-pro-preview` -> `gemini-3-pro-preview`
+- `pinned-claude-opus-4-6` -> `claude-opus-4.6`
+- `pinned-claude-sonnet-4-6` -> `claude-sonnet-4.6`
+- `pinned-gpt-5-4` -> `gpt-5.4`
+- `pinned-gemini-3-1-pro-preview` -> `gemini-3.1-pro-preview`
+- `pinned-gemini-3-pro-preview` -> `gemini-3-pro-preview`
 
 Execution rules:
 
@@ -81,21 +81,21 @@ Execution rules:
 
 Claude-specific fallback:
 
-- Try `consensus-claude-opus-4-6` first.
+- Try `pinned-claude-opus-4-6` first.
 - If the Claude attempt returns `SLOT_UNAVAILABLE`, the current model family, any non-Claude family, or any explicit Claude runtime below 4.6, retry once with a softer or default Claude request.
-- If the Claude slot still cannot produce an independent Claude-family participant, try `consensus-claude-sonnet-4-6` or an explicit Claude Sonnet fallback once.
+- If the Claude slot still cannot produce an independent Claude-family participant, try `pinned-claude-sonnet-4-6` or an explicit Claude Sonnet fallback once.
 - Count a Claude fallback only when it is `claude-sonnet-4.6` or higher.
-- If `consensus-claude-opus-4-6` is unavailable but `consensus-claude-sonnet-4-6` succeeds at version 4.6 or higher, count `consensus-claude-sonnet-4-6` as the Claude participant and say that `consensus-claude-opus-4-6` was unavailable and `consensus-claude-sonnet-4-6` fallback was used.
-- If both `consensus-claude-opus-4-6` and `consensus-claude-sonnet-4-6` fail, report that no independent Claude participant could be obtained.
+- If `pinned-claude-opus-4-6` is unavailable but `pinned-claude-sonnet-4-6` succeeds at version 4.6 or higher, count `pinned-claude-sonnet-4-6` as the Claude participant and say that `pinned-claude-opus-4-6` was unavailable and `pinned-claude-sonnet-4-6` fallback was used.
+- If both `pinned-claude-opus-4-6` and `pinned-claude-sonnet-4-6` fail, report that no independent Claude participant could be obtained.
 
 Gemini-specific fallback:
 
-- In VS Code or when the client already exposes `gemini-3.1-pro-preview`, try `consensus-gemini-3-1-pro-preview` first.
-- In Copilot CLI or when client support is unclear, try `consensus-gemini-3-pro-preview` first.
+- In VS Code or when the client already exposes `gemini-3.1-pro-preview`, try `pinned-gemini-3-1-pro-preview` first.
+- In Copilot CLI or when client support is unclear, try `pinned-gemini-3-pro-preview` first.
 - If the first Gemini attempt returns `SLOT_UNAVAILABLE`, the current model family, or any non-Gemini family, retry once with a softer or default Gemini request.
 - If the first Gemini slot still cannot produce an independent Gemini-family participant, try the other Gemini preview slot or one explicit Gemini fallback once.
 - If the first Gemini slot is unavailable but the other Gemini slot succeeds, count the successful Gemini slot as the Gemini participant and say which Gemini fallback was used.
-- If both `consensus-gemini-3-1-pro-preview` and `consensus-gemini-3-pro-preview` fail, report that no independent Gemini participant could be obtained.
+- If both `pinned-gemini-3-1-pro-preview` and `pinned-gemini-3-pro-preview` fail, report that no independent Gemini participant could be obtained.
 
 ## Workflow
 
