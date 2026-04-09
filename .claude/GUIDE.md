@@ -8,8 +8,11 @@ This directory stores Claude Code-specific assets.
   - Claude-specific subagents or role files.
 - `commands/`
   - Reusable Claude Code command definitions or command-related assets.
+- `skills/`
+  - Claude Code skills using `.claude/skills/<name>/SKILL.md` for slash-invokable workflows.
 
 ## Repository-Level Instructions
 
 - Use `CLAUDE.md` at the repository root when you need persistent project instructions for Claude Code.
 - Keep shared guidance in `.agents/` unless Claude-specific formatting is required.
+- Prefer thin Claude wrappers in `.claude/skills/` when a shared workflow in `.agents/` needs a Claude-specific entrypoint.

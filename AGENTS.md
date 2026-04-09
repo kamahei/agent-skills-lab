@@ -14,6 +14,7 @@ This repository is a workspace for creating, organizing, and reusing `AGENTS.md`
 - Directory conventions and supported features can change. Verify the latest official documentation before introducing or expanding AI-specific folders.
 - Handle vague requests proactively. If missing details would materially change the result, ask a short and concrete question. Otherwise, proceed with a sensible default.
 - If the user says "leave it to you", use the latest official documentation, current tool behavior, and broadly accepted best practices to produce the best default result.
+- Treat a user message that starts with `/skill-name` as an explicit request to use the matching skill when a matching folder exists under `.agents/skills/`, `.github/skills/`, or `.claude/skills/`, even if the current AI client does not provide a native slash-skill command.
 - Unless explicitly instructed otherwise, create files in English.
 - Use the user's language for chat replies, questions, and other conversational responses.
 
@@ -33,7 +34,7 @@ This repository is a workspace for creating, organizing, and reusing `AGENTS.md`
   - Typical examples: `.github/copilot-instructions.md`, `.github/instructions/`, `.github/prompts/`, `.github/agents/`, `.github/skills/`
 - `/.claude/`
   - Stores Claude Code-related assets.
-  - Typical examples: `.claude/agents/`, `.claude/commands/`, `.claude/settings.json`
+  - Typical examples: `.claude/agents/`, `.claude/commands/`, `.claude/skills/`, `.claude/settings.json`
   - If persistent repository instructions are needed for Claude Code, use `CLAUDE.md`.
 - `/.gemini/`
   - Stores Gemini CLI-related assets.
