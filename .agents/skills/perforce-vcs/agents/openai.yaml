@@ -1,0 +1,4 @@
+interface:
+  display_name: "Perforce VCS"
+  short_description: "Manage Perforce changelists with p4"
+  default_prompt: "Use $perforce-vcs to manage this workspace with p4 changelists instead of git."
