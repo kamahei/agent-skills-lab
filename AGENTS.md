@@ -25,7 +25,10 @@ This repository is a workspace for creating, organizing, and reusing `AGENTS.md`
 - `/.agents/`
   - Stores reusable assets that can work across multiple AI tools.
   - Typical examples: `/.agents/skills/`, `/.agents/agents/`, `/.agents/templates/`, `/.agents/references/`
-  - Treat this as the primary shared source when possible. Only create AI-specific variants when a tool requires a different format or behavior.
+  - Treat this as the primary shared source when possible.
+  - For skills in this repository, create the shared implementation in `/.agents/skills/` first.
+  - GitHub Copilot should consume shared skills from `/.agents/skills/` directly in this repository unless a future case proves a tool-specific wrapper is required.
+  - Only create AI-specific variants when a tool requires a different format or behavior.
 
 ### AI-Specific Assets
 
@@ -57,8 +60,10 @@ This repository is a workspace for creating, organizing, and reusing `AGENTS.md`
 
 ### 2. Requests To Create A Skill
 
-- If the skill is reusable across multiple AI tools, create it under `/.agents/skills/<skill-name>/`.
-- If it is specific to one AI tool, place it in that tool's dedicated directory.
+- Create the primary skill under `/.agents/skills/<skill-name>/` unless the user explicitly asks for a tool-specific-only skill.
+- When a shared skill should also be slash-invokable in Claude Code, create a thin wrapper under `/.claude/skills/<skill-name>/SKILL.md` that points back to the shared skill.
+- Do not create a `.github/skills/` wrapper for a shared skill by default in this repository. GitHub Copilot should use the shared skill from `/.agents/skills/`.
+- If a skill is truly specific to one AI tool, place it only in that tool's dedicated directory.
 - Prefer reuse and centralization over duplicate implementations when an existing shared skill can cover the need.
 - For task-execution skills, include clear `Activation`, `Inputs`, `Workflow`, `Guardrails`, and `Output Rules` sections unless the target format strongly requires a different structure.
 - For bugfix, review, audit, migration, or other high-judgment skills, define how to handle scope limits, uncertainty, validation, and risky changes instead of only describing the ideal outcome.
@@ -118,6 +123,7 @@ This repository is a workspace for creating, organizing, and reusing `AGENTS.md`
 - AGENTS, Skill, and Agent files should normally include at least purpose, intended tasks, workflow, constraints, and validation guidance.
 - Avoid scattering long duplicated instructions across AI-specific folders. Put shared rules in `.agents/` whenever possible.
 - Only add thin AI-specific adaptation layers when the tool truly needs its own format or conventions.
+- For shared skills in this repository, prefer one shared source in `.agents/skills/` plus an optional thin Claude wrapper in `.claude/skills/`.
 - When revising an existing file, prefer targeted edits over broad rewrites unless the file is clearly unsalvageable or the user asks for a rewrite.
 - Good skills should define not only what to do, but also what not to claim, when to stop, when to ask, and how to report uncertainty or incomplete coverage.
 
@@ -130,7 +136,9 @@ This repository is a workspace for creating, organizing, and reusing `AGENTS.md`
 ## Default Decision Order
 
 - If it should be shared, use `/.agents/`
-- If it is GitHub Copilot-specific, use `/.github/`
+- If it is a shared skill, create it in `/.agents/skills/`
+- If the shared skill also needs a Claude entrypoint, add a thin wrapper in `/.claude/skills/`
+- If it is GitHub Copilot-specific and cannot use the shared skill directly, use `/.github/`
 - If it is Claude Code-specific, use `/.claude/`
 - If it is Gemini CLI-specific, use `/.gemini/`
 - If it is an `AGENTS.md` sample, use `/agent-samples/<Topic>/AGENTS.md`

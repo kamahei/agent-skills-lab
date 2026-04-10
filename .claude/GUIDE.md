@@ -16,3 +16,4 @@ This directory stores Claude Code-specific assets.
 - Use `CLAUDE.md` at the repository root when you need persistent project instructions for Claude Code.
 - Keep shared guidance in `.agents/` unless Claude-specific formatting is required.
 - Prefer thin Claude wrappers in `.claude/skills/` when a shared workflow in `.agents/` needs a Claude-specific entrypoint.
+- For shared skills in this repository, do not duplicate the implementation in `.claude/skills/`; keep the real workflow in `.agents/skills/` and keep the Claude file thin.
