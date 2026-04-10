@@ -1,0 +1,4 @@
+interface:
+  display_name: "Project Kickoff Docs"
+  short_description: "Create implementation-ready project docs"
+  default_prompt: "Use $project-kickoff-docs to turn this project brief into a README, AGENTS.md, and implementation-ready docs."
