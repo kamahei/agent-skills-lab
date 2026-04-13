@@ -42,13 +42,57 @@ Selection rules:
 - Once the participant set is finalized, use only that set for the run and do not introduce any additional model outside it.
 - If the explicit set still cannot satisfy the requested independent count, fall back to the default set.
 - Use `gemini-3-pro-preview` as the portable Gemini baseline.
-- In VS Code or when the client already exposes `gemini-3.1-pro-preview`, prefer `gemini-3.1-pro-preview` before `gemini-3-pro-preview`.
-- In Copilot CLI or when client support is unclear, prefer `gemini-3-pro-preview` before `gemini-3.1-pro-preview`.
+- In VS Code or when the client already exposes `gemini-3.1-pro-preview`, prefer `pinned-gemini-3-1-pro-preview` before `pinned-gemini-3-pro-preview`.
+- In Copilot CLI or when client support is unclear, prefer `pinned-gemini-3-pro-preview` before `pinned-gemini-3-1-pro-preview`.
 
 ## Supported Task Types
 
 - Use for code changes, file creation, refactors, bug fixes, documentation, test design, code review, incident analysis, implementation plans, architecture options, prompts, or other tasks where multiple independent candidates improve quality.
 - For non-file tasks, replace file outputs with per-agent scratch artifacts such as notes, patches, plans, review reports, decision memos, or draft responses.
+
+## Pinned Agents
+
+Supported custom-agent locations:
+
+- `~/.copilot/agents/`
+- `.github/agents/`
+
+Mappings:
+
+- `pinned-claude-opus-4-6` -> `claude-opus-4.6`
+- `pinned-claude-sonnet-4-6` -> `claude-sonnet-4.6`
+- `pinned-gpt-5-4` -> `gpt-5.4`
+- `pinned-gemini-3-1-pro-preview` -> `gemini-3.1-pro-preview`
+- `pinned-gemini-3-pro-preview` -> `gemini-3-pro-preview`
+
+Execution rules:
+
+- Prefer the mapped pinned agent when it exists.
+- Treat the mapped agent file's `model:` field as the source of truth when the runtime model name is not exposed.
+- Do not treat current-model substitution as a successful pin.
+- Each pinned participant must work only inside its own isolated workspace and must not see peer artifacts until the peer-review stage.
+- If a pinned slot returns a usable independent candidate, do not run another fallback for that slot.
+- Use best-effort fallback only when the mapped agent is missing, unavailable, errors, or returns no usable independent candidate.
+- Exclude any slot that resolves to the current model family or another already-counted family.
+- Treat `SLOT_UNAVAILABLE` as unavailable, not as a candidate.
+
+Claude-specific fallback:
+
+- Try `pinned-claude-opus-4-6` first.
+- If the Claude attempt returns `SLOT_UNAVAILABLE`, the current model family, any non-Claude family, or any explicit Claude runtime below 4.6, retry once with a softer or default Claude request.
+- If the Claude slot still cannot produce an independent Claude-family participant, try `pinned-claude-sonnet-4-6` or an explicit Claude Sonnet fallback once.
+- Count a Claude fallback only when it is `claude-sonnet-4.6` or higher.
+- If `pinned-claude-opus-4-6` is unavailable but `pinned-claude-sonnet-4-6` succeeds at version 4.6 or higher, count `pinned-claude-sonnet-4-6` as the Claude participant and say that `pinned-claude-opus-4-6` was unavailable and `pinned-claude-sonnet-4-6` fallback was used.
+- If both `pinned-claude-opus-4-6` and `pinned-claude-sonnet-4-6` fail, report that no independent Claude participant could be obtained.
+
+Gemini-specific fallback:
+
+- In VS Code or when the client already exposes `gemini-3.1-pro-preview`, try `pinned-gemini-3-1-pro-preview` first.
+- In Copilot CLI or when client support is unclear, try `pinned-gemini-3-pro-preview` first.
+- If the first Gemini attempt returns `SLOT_UNAVAILABLE`, the current model family, or any non-Gemini family, retry once with a softer or default Gemini request.
+- If the first Gemini slot still cannot produce an independent Gemini-family participant, try the other Gemini preview slot or one explicit Gemini fallback once.
+- If the first Gemini slot is unavailable but the other Gemini slot succeeds, count the successful Gemini slot as the Gemini participant and say which Gemini fallback was used.
+- If both `pinned-gemini-3-1-pro-preview` and `pinned-gemini-3-pro-preview` fail, report that no independent Gemini participant could be obtained.
 
 ## Workspace Isolation
 
@@ -63,15 +107,18 @@ Selection rules:
 
 1. Restate the task, constraints, success criteria, and whether the run is `2-agent` or `3-agent`.
 2. Resolve the participant set from the user request or the default set before any agent work begins.
-3. Prepare one isolated workspace per agent and give every agent the same baseline context, constraints, and acceptance criteria.
-4. Have each agent produce its own candidate result independently before seeing any peer result.
-5. Capture each candidate as explicit artifacts: patches, files, plans, reports, or decision notes.
-6. Run peer review across all candidates. Each agent reviews every candidate, focusing on correctness, constraint fit, safety, completeness, repository consistency, and validation readiness.
-7. Select the strongest whole candidate when one clearly dominates. Otherwise extract the best parts from multiple candidates and build a synthesized result in a fresh synthesis workspace.
-8. Review the synthesized result with all agents and require explicit agreement or concrete objections tied to evidence.
-9. Refine the synthesized result until objections are resolved or no new technical evidence appears.
-10. Validate the final result as far as the task allows.
-11. Apply only the final agreed result to the real target files or final answer.
+3. Print `Models in use:` with model names only.
+4. Print `Pinned agents used:` separately when pinned custom agents participate.
+5. Print `Requested settings:` only when the user explicitly asks for model or reasoning transparency.
+6. Prepare one isolated workspace per agent and give every agent the same baseline context, constraints, and acceptance criteria.
+7. Have each agent produce its own candidate result independently before seeing any peer result.
+8. Capture each candidate as explicit artifacts: patches, files, plans, reports, or decision notes.
+9. Run peer review across all candidates. Each agent reviews every candidate, focusing on correctness, constraint fit, safety, completeness, repository consistency, and validation readiness.
+10. Select the strongest whole candidate when one clearly dominates. Otherwise extract the best parts from multiple candidates and build a synthesized result in a fresh synthesis workspace.
+11. Review the synthesized result with all agents and require explicit agreement or concrete objections tied to evidence.
+12. Refine the synthesized result until objections are resolved or no new technical evidence appears.
+13. Validate the final result as far as the task allows.
+14. Apply only the final agreed result to the real target files or final answer.
 
 ## Evaluation Rules
 
@@ -119,8 +166,16 @@ Selection rules:
 ## Output Rules
 
 - State the requested and achieved agent count.
+- List only model names under `Models in use:`.
+- If a pinned participant does not expose its runtime model, use the pinned agent's configured `model:` value as the model name.
+- Report custom agent names separately from model names.
+- Do not list collapsed or mismatched slots as independent participants.
 - State whether the run used whole-candidate selection or synthesized selection.
 - Mention any degradation, such as `3-agent` requested but `2-agent` achieved.
+- If fewer than 2 independent participants remain, explicitly say that isolated synthesis could not be fully completed.
+- If a requested `3-agent` run ends with only `2-agent` independence, explicitly say that it degraded to a `2-agent` run.
+- If a Claude slot resolves to `claude-sonnet-4.5` or any lower Claude version, explicitly exclude it from the participant count.
+- If a requested high-effort setting was softened for availability, call that out briefly.
 - Apply only the final agreed artifact to the real target.
 - When a log file is created, report its final path.
 - Do not expose temporary draft files as final deliverables unless the user explicitly asks for them.
