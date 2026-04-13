@@ -1,6 +1,6 @@
 ---
 name: multi-agent-isolated-synthesis
-description: Run the `/multi-agent-isolated-synthesis` workflow where 2 or 3 agents independently tackle the same task in separate temporary workspaces, compare results, synthesize the best parts, reach final consensus, and apply only the agreed final artifact. Use only when the user explicitly invokes `/multi-agent-isolated-synthesis`. Do not use for generic mentions of isolated multi-agent execution, best-of-N implementations, or compare-and-merge workflows without that exact skill invocation.
+description: Run the `/multi-agent-isolated-synthesis` workflow where 2 or 3 agents execute the same task in separate temporary workspaces, review one another's results, synthesize the best parts, reach final consensus, and apply only the agreed final artifact. Use only when the user explicitly invokes `/multi-agent-isolated-synthesis`. Do not use for generic mentions of isolated multi-agent execution, best-of-N implementations, or compare-and-merge workflows without that exact skill invocation.
 ---
 
 # Multi Agent Isolated Synthesis
@@ -11,10 +11,16 @@ description: Run the `/multi-agent-isolated-synthesis` workflow where 2 or 3 age
 - Do not activate for generic requests about isolated multi-agent execution, parallel candidate generation, best-of-N selection, or compare-and-merge unless `/multi-agent-isolated-synthesis` is explicitly specified.
 - Honor an explicit user request for `2-agent` or `3-agent` mode.
 - Default to 3 agents. Degrade to 2 only when tooling, runtime, or scope limits prevent 3 materially independent candidates.
-- Treat the default mode as `same task, independent candidates`. Split work into different subtasks only when the user explicitly asks for decomposition instead of alternative solutions.
+- Treat the default mode as `same task, same instruction packet, independent execution`. Split work into different subtasks only when the user explicitly asks for decomposition instead of alternative solutions.
 - Keep the participant set fixed for the run: the current agent plus the selected non-current slots only.
 - Do not add helper, review, explore, merge, or code-review agents outside that set.
 - Keep the original repository read-only until the final apply step, except for normal read access and validation commands.
+
+## Inputs
+
+- Expected context: a repository with a task that benefits from multiple independent executions followed by peer review and synthesis.
+- Required: the user's task statement. When the task is implicit from conversation history, restate it explicitly before dispatching sub-agents.
+- Optional inputs: target files or directories, constraints, acceptance criteria, diagnostics, failing tests, preferred artifact format, explicit model selection, agent count, and whether logs should be preserved.
 
 ## Participant Selection
 
@@ -45,9 +51,22 @@ Selection rules:
 - In VS Code or when the client already exposes `gemini-3.1-pro-preview`, prefer `pinned-gemini-3-1-pro-preview` before `pinned-gemini-3-pro-preview`.
 - In Copilot CLI or when client support is unclear, prefer `pinned-gemini-3-pro-preview` before `pinned-gemini-3-1-pro-preview`.
 
+## Depth Controls And Reporting
+
+- Prioritize model-family correctness and slot availability over aggressive depth-control requests.
+- Accept only `claude-opus-4.6` or `claude-sonnet-4.6` or higher as valid Claude participants.
+- Treat explicit Claude runtimes below 4.6, including `claude-sonnet-4.5`, as unavailable rather than as successful fallbacks.
+- Use vendor-native setting names only.
+- Prefer `reasoning_effort: xhigh` for GPT or Codex when available, but allow `high` or default behavior if stricter settings reduce availability.
+- Prefer a higher Gemini `thinking level`, but allow default Gemini behavior if explicit settings reduce availability.
+- Prefer a higher Claude thinking mode such as `extended thinking` or `adaptive thinking`, but allow default Claude behavior if explicit settings reduce availability.
+- Do not translate Claude or Gemini settings into `xhigh` unless the runtime explicitly exposes `xhigh`.
+- Report model metadata only when the user explicitly asks for it.
+- When reporting metadata, use runtime-exposed field names, say `not exposed by runtime` when necessary, and say `requested` rather than `used` when only the request is known.
+
 ## Supported Task Types
 
-- Use for code changes, file creation, refactors, bug fixes, documentation, test design, code review, incident analysis, implementation plans, architecture options, prompts, or other tasks where multiple independent candidates improve quality.
+- Use for code changes, file creation, refactors, bug fixes, documentation, test design, code review, incident analysis, implementation plans, architecture options, prompts, or other tasks where same-task parallel execution plus peer review and synthesis improve quality.
 - For non-file tasks, replace file outputs with per-agent scratch artifacts such as notes, patches, plans, review reports, decision memos, or draft responses.
 
 ## Pinned Agents
@@ -103,22 +122,57 @@ Gemini-specific fallback:
 - Track which original files each workspace mirrors so the final apply step is traceable.
 - Clean up temporary workspaces after completion unless the user asks to keep artifacts or logs.
 
+## Sub-Agent Prompt Construction
+
+The prompt sent to each sub-agent is the main quality lever. Do not reduce the task to a lossy summary when the goal is to match top-level agent quality.
+
+Mandatory prompt contents:
+
+1. The full user task statement or a faithful orchestrator restatement when the task must be clarified.
+2. A numbered list of concrete acceptance criteria derived from the task.
+3. The same scope limits, constraints, and "do not" rules for every agent.
+4. The relevant file contents or file excerpts with enough surrounding context to start strong. If the files are too large to include in full, include the most relevant sections and explicitly instruct the sub-agent to read the remaining files from its workspace.
+5. Relevant repository conventions, instruction files, diagnostics, failing tests, or logs that materially affect the task.
+6. The isolated workspace root path. For file-edit tasks, include the exact phrase `This workspace is isolated and disposable.`.
+7. The expected artifact format and validation expectations.
+8. An explicit instruction to read files and run available validation commands in the workspace rather than relying only on the prompt.
+
+Prompt anti-patterns to avoid:
+
+- Do not paraphrase the task into a one-line summary and expect top-level quality.
+- Do not send different baseline context to different agents unless the user explicitly asks for decomposed subtasks.
+- Do not expose peer artifacts during the initial execution phase.
+- Do not omit acceptance criteria or artifact expectations.
+
+## Artifact Format Contract
+
+Specify the expected output format in every sub-agent prompt. Use these defaults when the user does not specify one:
+
+- Code changes: complete modified files labeled with target paths, plus a brief rationale and the validation performed.
+- Bug fixes and refactors: modified files or patches plus a concise explanation of the chosen approach and any residual risk.
+- Plans, designs, and analyses: structured Markdown with sections for summary, proposal, trade-offs, risks, and open questions.
+- Reviews: structured findings classified as `confirmed issue`, `high-confidence risk`, `suggestion`, or `no issue found`, each with evidence.
+- Tests: complete test files plus the command used to validate them.
+
+If a sub-agent returns a partial or format-mismatched artifact, extract the usable content only when it is still relevant and flag the mismatch during evaluation.
+
 ## Workflow
 
-1. Restate the task, constraints, success criteria, and whether the run is `2-agent` or `3-agent`.
+1. Restate the task and constraints. Convert the success criteria into a numbered list of concrete, independently checkable acceptance criteria. State whether the run is `2-agent` or `3-agent`.
 2. Resolve the participant set from the user request or the default set before any agent work begins.
 3. Print `Models in use:` with model names only.
 4. Print `Pinned agents used:` separately when pinned custom agents participate.
 5. Print `Requested settings:` only when the user explicitly asks for model or reasoning transparency.
-6. Prepare one isolated workspace per agent and give every agent the same baseline context, constraints, and acceptance criteria.
-7. Have each agent produce its own candidate result independently before seeing any peer result.
-8. Capture each candidate as explicit artifacts: patches, files, plans, reports, or decision notes.
-9. Run peer review across all candidates. Each agent reviews every candidate, focusing on correctness, constraint fit, safety, completeness, repository consistency, and validation readiness.
-10. Select the strongest whole candidate when one clearly dominates. Otherwise extract the best parts from multiple candidates and build a synthesized result in a fresh synthesis workspace.
-11. Review the synthesized result with all agents and require explicit agreement or concrete objections tied to evidence.
-12. Refine the synthesized result until objections are resolved or no new technical evidence appears.
-13. Validate the final result as far as the task allows.
-14. Apply only the final agreed result to the real target files or final answer.
+6. Prepare one isolated workspace per agent.
+7. Build one shared task packet from the current AI's task instruction, acceptance criteria, constraints, relevant files, diagnostics, and expected artifact format. Dispatch that same packet to every agent before any peer output is visible.
+8. Have each agent execute the same task independently in its own workspace, perform a self-check, and return explicit artifacts: files, patches, plans, reports, or decision notes.
+9. Dispatch cross-review by sending each candidate's full artifacts to every other agent together with the original task packet. Require review of correctness, constraint fit, safety, completeness, repository consistency, mergeability, and validation readiness. In `3-agent` mode, acknowledge that full cross-review requires 6 review passes. If token or runtime limits make full cross-review impractical, say so explicitly and use the best bounded fallback you can support rather than claiming a full cross-review pass.
+10. Collect structured review reports from all agents and the current agent. Distinguish `confirmed strength`, `confirmed flaw`, `suspected risk`, and `stylistic preference`.
+11. Select the strongest whole candidate when one clearly dominates on confirmed strengths without confirmed flaws. Otherwise extract the best-supported parts from multiple candidates and build a synthesized result in a fresh synthesis workspace.
+12. Send the selected or synthesized result back to all agents for final approval or evidence-backed objections. Silence is not approval.
+13. Refine the selected or synthesized result until objections are resolved or no new technical evidence appears.
+14. Validate the final result as far as the task allows.
+15. Apply only the final agreed result to the real target files or final answer.
 
 ## Evaluation Rules
 
@@ -134,6 +188,9 @@ Gemini-specific fallback:
 - If combining multiple candidates, create the merged result in a dedicated synthesis workspace rather than directly in the repository.
 - Preserve traceability by noting which agent contributed each adopted part when that matters for review or logging.
 - Re-run compatibility checks whenever mixed parts touch the same interface, file, or assumption.
+- When candidates take structurally incompatible approaches, do not force a code-level merge. Choose the stronger approach first, then adopt only clearly compatible improvements from the others.
+- When candidates modify the same lines differently, prefer the version with stronger review support. If review support is close, prefer the version closer to repository conventions and easier validation.
+- When one candidate expands scope beyond the request and another satisfies the acceptance criteria narrowly, prefer the narrower safe candidate unless the added scope resolves a confirmed gap.
 - If a merge would require broad architectural, schema, dependency, API, or workflow changes beyond the user request, stop and ask before applying that direction.
 
 ## Consensus And Stop Conditions
@@ -142,6 +199,13 @@ Gemini-specific fallback:
 - Allow at most 2 synthesis refinement rounds after the initial peer review unless the user explicitly asks for deeper iteration.
 - Stop early when all agents agree or when further rounds add no new technical evidence.
 - If full agreement is impossible, choose the safest high-confidence result and clearly note the remaining disagreement.
+
+## Task-Level Failure Handling
+
+- If a sub-agent returns a partial result that still covers some acceptance criteria, keep it in the evaluation pool and clearly note the gaps.
+- If a sub-agent returns output that is empty, off-topic, or unusable, exclude it from the evaluation pool and record why.
+- If a sub-agent errors out or times out, treat it as an unavailable slot and apply the same degradation rules used for slot unavailability.
+- If all non-current agents fail at the task level, complete the task as a single-agent run and state clearly that isolated synthesis could not be completed.
 
 ## Validation
 
@@ -153,7 +217,7 @@ Gemini-specific fallback:
 ## Logging
 
 - When the user asks for logs, create a log file that includes:
-  - the task given to each agent
+  - the task packet given to each agent
   - the temporary workspace used by each agent
   - the artifacts produced by each agent
   - the evaluation of each candidate, including strengths, weaknesses, and rejection reasons when applicable
@@ -170,6 +234,7 @@ Gemini-specific fallback:
 - If a pinned participant does not expose its runtime model, use the pinned agent's configured `model:` value as the model name.
 - Report custom agent names separately from model names.
 - Do not list collapsed or mismatched slots as independent participants.
+- State that all participants received the same task packet when the run followed the default same-task workflow.
 - State whether the run used whole-candidate selection or synthesized selection.
 - Mention any degradation, such as `3-agent` requested but `2-agent` achieved.
 - If fewer than 2 independent participants remain, explicitly say that isolated synthesis could not be fully completed.
@@ -183,7 +248,7 @@ Gemini-specific fallback:
 
 ## Suggested Prompts
 
-- `/multi-agent-isolated-synthesis implement this change with isolated temporary workspaces`
-- `/multi-agent-isolated-synthesis compare 3 independent solutions and merge the best parts`
-- `/multi-agent-isolated-synthesis review these options independently, then pick the safest final plan`
+- `/multi-agent-isolated-synthesis send this exact task to 2 agents in isolated workspaces, then have them review and merge the results`
+- `/multi-agent-isolated-synthesis run the same implementation task in 3-agent mode, keep peer outputs hidden until review, then synthesize the best final artifact`
+- `/multi-agent-isolated-synthesis give every agent the same task packet, make them cross-review the artifacts, and pick the safest merged result`
 - `/multi-agent-isolated-synthesis make the change, keep the repository untouched until the final apply step, and emit a task log`
