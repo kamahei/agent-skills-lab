@@ -40,15 +40,23 @@ Allowed baselines:
 
 Default sets:
 
-- 2-agent: `claude-opus-4.6` + `Current AI model`
-- 3-agent: `claude-opus-4.6` + `gpt-5.4` + `Current AI model`
+- Base default sets (before family filtering):
+	- 2-agent: `claude-opus-4.6` + `Current AI model`
+	- 3-agent: `claude-opus-4.6` + `gpt-5.4` + `Current AI model`
+
+- Family-aware defaults (must override the base defaults when needed):
+	- If `Current AI model` is Claude family, use `gpt-5.4` as the 2-agent non-current slot.
+	- If `Current AI model` is Claude family, use `gpt-5.4` + Gemini (`gemini-3.1-pro-preview` or `gemini-3-pro-preview`) for 3-agent mode.
+	- If `Current AI model` is GPT family, use Claude (`claude-opus-4.6` or `claude-sonnet-4.6+`) as the 2-agent non-current slot.
+	- If `Current AI model` is Gemini family, use Claude (`claude-opus-4.6` or `claude-sonnet-4.6+`) as the 2-agent non-current slot.
 
 Selection rules:
 
 - Resolve `Current AI model` to its actual runtime model before finalizing the set.
 - Keep model families distinct, not just model names distinct.
+- A non-current reviewer in the same family as `Current AI model` is never allowed, even if it is a different model tier (for example, Sonnet vs Opus).
 - If `Current AI model` conflicts by family with a non-current slot, keep `Current AI model` and replace the conflicting slot.
-- Use this replacement priority: Claude Opus, GPT, Gemini.
+- Use this replacement priority among non-conflicting families: GPT, Gemini, Claude.
 - If the user explicitly names 2 or 3 allowed models, use that set after applying the same family rule.
 - If the explicit set still cannot satisfy the requested independent count, fall back to the default set.
 - Use `gemini-3-pro-preview` as the portable Gemini baseline.
@@ -91,6 +99,7 @@ Execution rules:
 - If a pinned slot returns a usable independent review report, do not run another fallback for that slot.
 - Use best-effort fallback only when the mapped agent is missing, unavailable, errors, or returns no usable independent review report.
 - Exclude any slot that resolves to the current model family or another already-counted family.
+- This exclusion applies even when the slot appears stronger by tier within that family (for example, do not select `claude-opus-4.6` when `Current AI model` is `claude-sonnet-4.6`).
 - Treat `SLOT_UNAVAILABLE` as unavailable, not as a review report.
 
 Claude-specific fallback:
