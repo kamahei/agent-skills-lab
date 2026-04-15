@@ -33,11 +33,13 @@ Default sets:
 - Family-aware defaults (must override the base defaults when needed):
 	- If `Current AI model` is Claude family, use `gpt-5.4` as the 2-agent non-current slot.
 	- If `Current AI model` is Claude family, use `gpt-5.4` + Gemini (`gemini-3.1-pro-preview` or `gemini-3-pro-preview`) for 3-agent mode.
-	- If `Current AI model` is GPT family, use Claude (`claude-opus-4.6` or `claude-sonnet-4.6+`) as the 2-agent non-current slot.
-	- If `Current AI model` is Gemini family, use Claude (`claude-opus-4.6` or `claude-sonnet-4.6+`) as the 2-agent non-current slot.
+	- If `Current AI model` is GPT family, fill the single 2-agent non-current slot with `claude-opus-4.6`; fall back to `claude-sonnet-4.6+` only per the Claude-specific fallback rules below.
+	- If `Current AI model` is Gemini family, fill the single 2-agent non-current slot with `claude-opus-4.6`; fall back to `claude-sonnet-4.6+` only per the Claude-specific fallback rules below.
 
 Selection rules:
 
+- `Current AI model` always occupies exactly one participant slot. The remaining slots are non-current: exactly 1 in `2-agent` mode and exactly 2 in `3-agent` mode.
+- For a requested `2-agent` run, do not replace `Current AI model` with an additional non-current participant, and do not treat 2 non-current participants as satisfying the request.
 - Resolve `Current AI model` to its actual runtime model before finalizing the set.
 - Keep model families distinct, not just model names distinct.
 - A non-current participant in the same family as `Current AI model` is never allowed, even if it is a different model tier (for example, Sonnet vs Opus).
@@ -90,6 +92,7 @@ Execution rules:
 
 Claude-specific fallback:
 
+- Fill at most 1 Claude slot per run. Stop the Claude fallback chain as soon as any Claude model returns a usable independent proposal.
 - Try `pinned-claude-opus-4-6` first.
 - If the Claude attempt returns `SLOT_UNAVAILABLE`, the current model family, any non-Claude family, or any explicit Claude runtime below 4.6, retry once with a softer or default Claude request.
 - If the Claude slot still cannot produce an independent Claude-family participant, try `pinned-claude-sonnet-4-6` or an explicit Claude Sonnet fallback once.
@@ -99,6 +102,7 @@ Claude-specific fallback:
 
 Gemini-specific fallback:
 
+- Fill at most 1 Gemini slot per run. Stop the Gemini fallback chain as soon as any Gemini model returns a usable independent proposal.
 - In VS Code or when the client already exposes `gemini-3.1-pro-preview`, try `pinned-gemini-3-1-pro-preview` first.
 - In Copilot CLI or when client support is unclear, try `pinned-gemini-3-pro-preview` first.
 - If the first Gemini attempt returns `SLOT_UNAVAILABLE`, the current model family, or any non-Gemini family, retry once with a softer or default Gemini request.
@@ -125,6 +129,7 @@ Gemini-specific fallback:
 - If a pinned participant does not expose its runtime model, use the pinned agent's configured `model:` value as the model name.
 - Report custom agent names separately from model names.
 - Do not list collapsed or mismatched slots as independent participants.
+- For a requested `2-agent` run, report exactly `Current AI model` plus 1 non-current participant. Do not report both a primary attempt and its fallback as separate participants.
 - If fewer than 2 independent participants remain, explicitly say that multi-agent consensus could not be fully completed.
 - If a requested 3-agent run ends with only 2 independent participants, explicitly say that it degraded to a 2-agent run.
 - If a Claude slot resolves to `claude-sonnet-4.5` or any lower Claude version, explicitly exclude it from the participant count.
