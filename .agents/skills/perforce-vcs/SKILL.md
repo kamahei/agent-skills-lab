@@ -21,7 +21,7 @@ description: Use Perforce or Helix Core CLI (`p4`) instead of git for source con
 ## Workflow
 
 1. Confirm that the workspace is actually usable with Perforce before changing source-control state. Prefer `p4 info`, environment inspection, and workspace inspection to confirm `P4PORT`, `P4CLIENT`, `P4USER`, and the active client mapping. If `p4` is unavailable or server access is misconfigured, stop and report the blocking issue instead of switching to `git`.
-2. Inspect existing pending work before opening or moving files. Use commands such as `p4 opened`, `p4 changes -s pending`, `p4 diff`, `p4 reconcile -n`, `p4 files`, `p4 fstat`, `p4 filelog`, and `p4 describe -s` according to the question being answered.
+2. Inspect existing pending work before opening or moving files. Use commands such as `p4 opened`, `p4 changes -s pending`, `p4 diff`, `p4 reconcile -n`, `p4 files`, `p4 fstat`, `p4 filelog`, and `p4 describe -s` according to the question being answered. For the diff of a specific changelist, pick the command that matches the state: `p4 describe [-du] <change>` for submitted, `p4 describe -S [-du] <change>` for shelved pending, or `p4 diff` over files listed by `p4 opened -c <change>` for open pending. `p4 describe` alone does not emit diffs on pending changelists.
 3. Open files with the correct Perforce action before editing or rearranging them. Use `p4 edit` for tracked modifications, `p4 add` for new files, `p4 delete` for removals, `p4 move` for renames or moves, `p4 integrate` or `p4 copy` for propagation work, and `p4 reconcile` after offline or tool-driven changes that bypassed `p4`.
 4. Create or reuse numbered changelists deliberately. Do not leave unrelated work mixed into the default changelist when the task contains distinct fixes, features, refactors, or generated updates.
 5. Split changelists by coherent intent, not by file extension. Keep one changelist per logical unit such as a bug fix, a refactor, a docs change, or a generated-file refresh. When a task expands, move files into the correct changelist with `p4 reopen -c <change>`.
@@ -51,11 +51,12 @@ description: Use Perforce or Helix Core CLI (`p4`) instead of git for source con
 
 ## Command Selection
 
-- Read `references/commands.md` for the core command catalogue and usage patterns.
+- Read `references/commands.md` for the core command catalogue and usage patterns, including the "Changelist Diffs" section that lays out which command to use for submitted vs pending vs shelved state.
 - Prefer inspection commands before mutating commands.
 - Prefer `p4 move` over ad hoc delete-and-add renames when the history should be preserved.
 - Prefer noninteractive changelist editing for automation. Generate a form with `p4 change -o`, edit the spec outside the interactive editor, and feed it back with `p4 change -i` using a shell-appropriate workflow.
-- When exact flags are uncertain, consult local `p4` help or official Perforce documentation instead of guessing.
+- Prefer `-ztag` or `-Mj` (JSON-per-line) global options when parsing `p4` output in automation. Plain output is not a stable contract.
+- When exact flags are uncertain, consult `p4 help <command>` or official Perforce documentation instead of guessing.
 
 ## Guardrails
 
