@@ -12,7 +12,7 @@ description: Run `/multi-agent-review-fix` to implement or inspect a change, rev
 - Non-current slots review the real diff only. They do not implement the change or edit repository files.
 - If the user requests a code change and no candidate diff exists yet, the current agent implements first, then starts review.
 - Keep a fixed participant set: the current agent plus the selected non-current slots only.
-- Count only distinct model families.
+- For default selection, count only distinct model families. If the user explicitly names non-current models, the user selection takes precedence even when a named model shares the current model family.
 
 ## Inputs
 
@@ -36,6 +36,11 @@ Allowed baselines:
 - Gemini: prefer `gemini-3.1-pro-preview`; portable fallback `gemini-3-pro-preview`
 - `Current AI model`
 
+Explicit model aliases:
+
+- Treat `opus-4.7` as `claude-opus-4.7`, `opus-4.6` as `claude-opus-4.6`, and `sonnet-4.6` as `claude-sonnet-4.6`.
+- Treat `gpt-5.5`, `gpt-5.4`, `gemini-3.1-pro-preview`, and `gemini-3-pro-preview` as canonical model names.
+
 Default sets:
 
 - `2-agent`: `Current AI model` + `claude-opus-4.7`
@@ -50,9 +55,9 @@ Selection rules:
 
 - `Current AI model` always occupies one slot. Non-current slots: 1 in `2-agent`, 2 in `3-agent`.
 - Resolve the current runtime model before finalizing the set.
-- Families must be distinct. Never count another slot from the current family, even at a different tier.
-- If a slot conflicts by family, keep `Current AI model` and replace the conflicting slot. Use replacement priority `GPT -> Gemini -> Claude`.
-- If the user explicitly names 2 or 3 models, honor that set after the same family check. If independence still fails, fall back to the defaults.
+- If the user explicitly names non-current models (e.g., `3-agent opus-4.7 gpt-5.5`), canonicalize aliases and use `Current AI model` plus those models exactly as requested. Do not run family conflict replacement or collapse exclusion for those explicitly named slots.
+- For default selection only, families must be distinct. Never count another slot from the current family, even at a different tier.
+- For default selection only, if a slot conflicts by family, keep `Current AI model` and replace the conflicting slot. Use replacement priority `GPT -> Claude -> Gemini`.
 - Gemini preference: in VS Code or when `gemini-3.1-pro-preview` is already exposed, prefer `pinned-gemini-3-1-pro-preview`; in Copilot CLI or when support is unclear, prefer `pinned-gemini-3-pro-preview`.
 
 ## Depth Controls And Reporting
@@ -84,8 +89,8 @@ Execution rules:
 - Prefer the mapped pinned agent when it exists.
 - If the runtime model name is hidden, use the pinned agent file's `model:` field.
 - Current-model substitution does not count as a successful pin.
-- Stop a slot's fallback chain as soon as it returns a usable independent review report.
-- Exclude slots that collapse to the current family or another already-counted family, even at a stronger tier.
+- Stop a slot's fallback chain as soon as it returns a usable review report.
+- Exclude default-selected slots that collapse to the current family or another already-counted family, even at a stronger tier. Do not apply this exclusion to slots that were explicitly named by the user.
 - Treat `SLOT_UNAVAILABLE` as unavailable.
 
 GPT fallback:
@@ -135,7 +140,7 @@ Gemini fallback:
 1. Restate the task, constraints, review base, and whether the run is `2-agent` or `3-agent`.
 2. Make the requested change with the current agent only, or inspect the existing candidate diff if one already exists.
 3. Determine the exact review scope from the real diff and collect the minimum context, diagnostics, and useful validation commands.
-4. Resolve the current runtime model and finalize the independent participant set.
+4. Resolve the current runtime model and finalize the participant set.
 5. Print `Models in use:` with model names only.
 6. Print `Pinned agents used:` separately when pinned custom agents participate.
 7. Print `Requested settings:` only when the user explicitly asks for model or reasoning transparency.
@@ -148,15 +153,15 @@ Gemini fallback:
 
 ## Output Rules
 
-- State the requested and achieved independent count.
+- State the requested and achieved participant count. For default selection, also state independent family count if it differs.
 - State the reviewed scope briefly.
 - Under `Models in use:`, list model names only.
 - If a pinned participant does not expose its runtime model, use the pinned agent's `model:` value.
 - Report custom agent names separately from model names.
 - Do not list collapsed slots or fallback attempts as separate participants.
 - For `2-agent`, report exactly `Current AI model` plus 1 non-current participant.
-- If fewer than 2 independent participants remain, explicitly say that multi-agent review could not be fully completed.
-- If `3-agent` was requested but only 2 independent participants remain, explicitly say that the run degraded to `2-agent`.
+- If fewer than 2 usable participants remain, explicitly say that multi-agent review could not be fully completed.
+- If `3-agent` was requested but only 2 usable participants remain, explicitly say that the run degraded to `2-agent`.
 - Exclude any Claude slot that resolves to `claude-sonnet-4.5` or lower.
 - Clearly separate applied fixes from findings intentionally left unchanged.
 - Report what validation ran and any residual risk that still matters.

@@ -8,7 +8,7 @@ description: Run `/multi-agent-isolated-synthesis` so 2 or 3 agents solve the sa
 ## Activation
 
 - Activate only on the exact `/multi-agent-isolated-synthesis` command.
-- Honor an explicit `2-agent` or `3-agent` request. Default to `3-agent`, degrading to `2-agent` only when true independence is not feasible.
+- Honor an explicit `2-agent` or `3-agent` request. Default to `3-agent`; for default selection, degrade to `2-agent` only when an independent participant cannot be obtained.
 - Default mode is `same task, same instruction packet, independent execution`. Split into different subtasks only when the user explicitly asks for decomposition.
 - Keep a fixed participant set: the current agent plus the selected non-current slots only. Do not add helper, review, merge, explore, or code-review agents.
 - Keep the original repository read-only until the final apply step, aside from normal reads and validation.
@@ -29,6 +29,11 @@ Allowed baselines:
 - Gemini: prefer `gemini-3.1-pro-preview`; portable fallback `gemini-3-pro-preview`
 - `Current AI model`
 
+Explicit model aliases:
+
+- Treat `opus-4.7` as `claude-opus-4.7`, `opus-4.6` as `claude-opus-4.6`, and `sonnet-4.6` as `claude-sonnet-4.6`.
+- Treat `gpt-5.5`, `gpt-5.4`, `gemini-3.1-pro-preview`, and `gemini-3-pro-preview` as canonical model names.
+
 Default sets:
 
 - `2-agent`: `Current AI model` + `claude-opus-4.7`
@@ -43,9 +48,9 @@ Selection rules:
 
 - `Current AI model` always occupies one slot. Non-current slots: 1 in `2-agent`, 2 in `3-agent`.
 - Resolve the current runtime model before finalizing the set.
-- Families must be distinct. Never count another slot from the current family, even at a different tier.
-- If a slot conflicts by family, keep `Current AI model` and replace the conflicting slot. Use replacement priority `GPT -> Gemini -> Claude`.
-- If the user explicitly names 2 or 3 models, honor that set after the same family check. If independence still fails, fall back to the defaults.
+- If the user explicitly names non-current models (e.g., `3-agent opus-4.7 gpt-5.5`), canonicalize aliases and use `Current AI model` plus those models exactly as requested. Do not run family conflict replacement or collapse exclusion for those explicitly named slots.
+- For default selection only, families must be distinct. Never count another slot from the current family, even at a different tier.
+- For default selection only, if a slot conflicts by family, keep `Current AI model` and replace the conflicting slot. Use replacement priority `GPT -> Claude -> Gemini`.
 - Once finalized, use only that participant set for the run.
 - Gemini preference: in VS Code or when `gemini-3.1-pro-preview` is already exposed, prefer `pinned-gemini-3-1-pro-preview`; in Copilot CLI or when support is unclear, prefer `pinned-gemini-3-pro-preview`.
 
@@ -79,8 +84,8 @@ Execution rules:
 - If the runtime model name is hidden, use the pinned agent file's `model:` field.
 - Current-model substitution does not count as a successful pin.
 - Each pinned participant works only inside its own isolated workspace until the review phase.
-- Stop a slot's fallback chain as soon as it returns a usable independent candidate.
-- Exclude slots that collapse to the current family or another already-counted family, even at a stronger tier.
+- Stop a slot's fallback chain as soon as it returns a usable candidate.
+- Exclude default-selected slots that collapse to the current family or another already-counted family, even at a stronger tier. Do not apply this exclusion to slots that were explicitly named by the user.
 - Treat `SLOT_UNAVAILABLE` as unavailable.
 
 GPT fallback:
@@ -175,8 +180,8 @@ Gemini fallback:
 - For `2-agent`, report exactly `Current AI model` plus 1 non-current participant.
 - State whether all participants received the same task packet and whether the final result used whole-candidate selection or synthesized selection.
 - Mention any degradation, such as `3-agent` requested but `2-agent` achieved.
-- If fewer than 2 independent participants remain, explicitly say that isolated synthesis could not be fully completed.
-- If `3-agent` was requested but only 2 independent participants remain, explicitly say that the run degraded to `2-agent`.
+- If fewer than 2 usable participants remain, explicitly say that isolated synthesis could not be fully completed.
+- If `3-agent` was requested but only 2 usable participants remain, explicitly say that the run degraded to `2-agent`.
 - Exclude any Claude slot that resolves to `claude-sonnet-4.5` or lower.
 - If a requested high-effort setting was softened for availability, call that out briefly.
 - Apply only the final agreed artifact to the real target.
