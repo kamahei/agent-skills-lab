@@ -17,14 +17,14 @@ description: Run `/multi-agent-consensus` for bounded 2-agent or 3-agent indepen
 Allowed baselines:
 
 - Claude: prefer `claude-opus-4.7`, then `claude-opus-4.6`, then `claude-sonnet-4.6+`
-- GPT: `gpt-5.4+`
+- GPT: prefer `gpt-5.5`, fallback `gpt-5.4+`
 - Gemini: prefer `gemini-3.1-pro-preview`; portable fallback `gemini-3-pro-preview`
 - `Current AI model`
 
 Default sets:
 
 - `2-agent`: `Current AI model` + `claude-opus-4.7`
-- `3-agent`: `Current AI model` + `claude-opus-4.7` + `gpt-5.4`
+- `3-agent`: `Current AI model` + `claude-opus-4.7` + `gpt-5.5`
 
 Family-aware defaults:
 
@@ -59,6 +59,7 @@ Mappings:
 - `pinned-claude-opus-4-7` -> `claude-opus-4.7`
 - `pinned-claude-opus-4-6` -> `claude-opus-4.6`
 - `pinned-claude-sonnet-4-6` -> `claude-sonnet-4.6`
+- `pinned-gpt-5-5` -> `gpt-5.5`
 - `pinned-gpt-5-4` -> `gpt-5.4`
 - `pinned-gemini-3-1-pro-preview` -> `gemini-3.1-pro-preview`
 - `pinned-gemini-3-pro-preview` -> `gemini-3-pro-preview`
@@ -71,6 +72,14 @@ Execution rules:
 - Stop a slot's fallback chain as soon as it returns a usable independent proposal.
 - Exclude slots that collapse to the current family or another already-counted family, even at a stronger tier.
 - Treat `SLOT_UNAVAILABLE` as unavailable.
+
+GPT fallback:
+
+- Fill at most 1 GPT slot.
+- Order: `pinned-gpt-5-5` or explicit `gpt-5.5` -> one softer/default retry if needed -> `pinned-gpt-5-4` or explicit `gpt-5.4`.
+- Count only `gpt-5.4+`.
+- If fallback supplied the slot, say which fallback was used.
+- If no GPT fallback succeeds, report that no independent GPT participant could be obtained.
 
 Claude fallback:
 
